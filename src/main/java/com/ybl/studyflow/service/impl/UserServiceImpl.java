@@ -8,6 +8,7 @@ import com.ybl.studyflow.mapper.UserMapper;
 import com.ybl.studyflow.service.UserService;
 import com.ybl.studyflow.vo.LoginVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
     public List<User> findAll(){
@@ -33,7 +37,7 @@ public class UserServiceImpl implements UserService {
 
         User newUser = new User();
         newUser.setUsername(dto.getUsername());
-        newUser.setPassword(dto.getPassword());
+        newUser.setPassword(bCryptPasswordEncoder.encode(dto.getPassword()));
 
         userMapper.insert(newUser);
     }
@@ -46,7 +50,7 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("用户不存在，请先注册！");
         }
 
-        if(!user.getPassword().equals(dto.getPassword())){
+        if(!bCryptPasswordEncoder.matches(dto.getPassword(),user.getPassword())){
             throw new BusinessException("用户密码错误！");
         }
 
